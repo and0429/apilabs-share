@@ -1,0 +1,16 @@
+server:
+  port: 20001
+  context-path: /
+spring:
+  datasource:
+    druid:
+      url: jdbc:mysql://www.apilabs.cn:3306/share?useUnicode=true&characterEncoding=utf8&autoReconnect=true&rewriteBatchedStatements=TRUE
+      username: root
+      password: 123456
+      driver-class-name: com.mysql.jdbc.Driver
+mybatis:
+  type-aliases-package: cn.apilabs.share.domain
+  mapper-locations:
+  - classpath:/mapper/*Mapper.xml
+logging:
+  config: classpath:logback.xml

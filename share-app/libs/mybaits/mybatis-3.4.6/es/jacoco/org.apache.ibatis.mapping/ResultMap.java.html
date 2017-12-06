@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ResultMap.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">mybatis</a> &gt; <a href="index.source.html" class="el_package">org.apache.ibatis.mapping</a> &gt; <span class="el_source">ResultMap.java</span></div><h1>ResultMap.java</h1><pre class="source lang-java linenums">/**
+ *    Copyright 2009-2017 the original author or authors.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+package org.apache.ibatis.mapping;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.builder.BuilderException;
+import org.apache.ibatis.logging.Log;
+import org.apache.ibatis.logging.LogFactory;
+import org.apache.ibatis.reflection.Jdk;
+import org.apache.ibatis.reflection.ParamNameUtil;
+import org.apache.ibatis.session.Configuration;
+
+/**
+ * @author Clinton Begin
+ */
+public class ResultMap {
+  private Configuration configuration;
+
+  private String id;
+  private Class&lt;?&gt; type;
+  private List&lt;ResultMapping&gt; resultMappings;
+  private List&lt;ResultMapping&gt; idResultMappings;
+  private List&lt;ResultMapping&gt; constructorResultMappings;
+  private List&lt;ResultMapping&gt; propertyResultMappings;
+  private Set&lt;String&gt; mappedColumns;
+  private Set&lt;String&gt; mappedProperties;
+  private Discriminator discriminator;
+  private boolean hasNestedResultMaps;
+  private boolean hasNestedQueries;
+  private Boolean autoMapping;
+
+<span class="nc" id="L55">  private ResultMap() {</span>
+<span class="nc" id="L56">  }</span>
+
+  public static class Builder {
+<span class="nc" id="L59">    private static final Log log = LogFactory.getLog(Builder.class);</span>
+
+<span class="nc" id="L61">    private ResultMap resultMap = new ResultMap();</span>
+
+    public Builder(Configuration configuration, String id, Class&lt;?&gt; type, List&lt;ResultMapping&gt; resultMappings) {
+<span class="nc" id="L64">      this(configuration, id, type, resultMappings, null);</span>
+<span class="nc" id="L65">    }</span>
+
+<span class="nc" id="L67">    public Builder(Configuration configuration, String id, Class&lt;?&gt; type, List&lt;ResultMapping&gt; resultMappings, Boolean autoMapping) {</span>
+<span class="nc" id="L68">      resultMap.configuration = configuration;</span>
+<span class="nc" id="L69">      resultMap.id = id;</span>
+<span class="nc" id="L70">      resultMap.type = type;</span>
+<span class="nc" id="L71">      resultMap.resultMappings = resultMappings;</span>
+<span class="nc" id="L72">      resultMap.autoMapping = autoMapping;</span>
+<span class="nc" id="L73">    }</span>
+
+    public Builder discriminator(Discriminator discriminator) {
+<span class="nc" id="L76">      resultMap.discriminator = discriminator;</span>
+<span class="nc" id="L77">      return this;</span>
+    }
+
+    public Class&lt;?&gt; type() {
+<span class="nc" id="L81">      return resultMap.type;</span>
+    }
+
+    public ResultMap build() {
+<span class="nc bnc" id="L85" title="All 2 branches missed.">      if (resultMap.id == null) {</span>
+<span class="nc" id="L86">        throw new IllegalArgumentException(&quot;ResultMaps must have an id&quot;);</span>
+      }
+<span class="nc" id="L88">      resultMap.mappedColumns = new HashSet&lt;String&gt;();</span>
+<span class="nc" id="L89">      resultMap.mappedProperties = new HashSet&lt;String&gt;();</span>
+<span class="nc" id="L90">      resultMap.idResultMappings = new ArrayList&lt;ResultMapping&gt;();</span>
+<span class="nc" id="L91">      resultMap.constructorResultMappings = new ArrayList&lt;ResultMapping&gt;();</span>
+<span class="nc" id="L92">      resultMap.propertyResultMappings = new ArrayList&lt;ResultMapping&gt;();</span>
+<span class="nc" id="L93">      final List&lt;String&gt; constructorArgNames = new ArrayList&lt;String&gt;();</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">      for (ResultMapping resultMapping : resultMap.resultMappings) {</span>
+<span class="nc bnc" id="L95" title="All 4 branches missed.">        resultMap.hasNestedQueries = resultMap.hasNestedQueries || resultMapping.getNestedQueryId() != null;</span>
+<span class="nc bnc" id="L96" title="All 6 branches missed.">        resultMap.hasNestedResultMaps = resultMap.hasNestedResultMaps || (resultMapping.getNestedResultMapId() != null &amp;&amp; resultMapping.getResultSet() == null);</span>
+<span class="nc" id="L97">        final String column = resultMapping.getColumn();</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">        if (column != null) {</span>
+<span class="nc" id="L99">          resultMap.mappedColumns.add(column.toUpperCase(Locale.ENGLISH));</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">        } else if (resultMapping.isCompositeResult()) {</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">          for (ResultMapping compositeResultMapping : resultMapping.getComposites()) {</span>
+<span class="nc" id="L102">            final String compositeColumn = compositeResultMapping.getColumn();</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">            if (compositeColumn != null) {</span>
+<span class="nc" id="L104">              resultMap.mappedColumns.add(compositeColumn.toUpperCase(Locale.ENGLISH));</span>
+            }
+<span class="nc" id="L106">          }</span>
+        }
+<span class="nc" id="L108">        final String property = resultMapping.getProperty();</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">        if(property != null) {</span>
+<span class="nc" id="L110">          resultMap.mappedProperties.add(property);</span>
+        }
+<span class="nc bnc" id="L112" title="All 2 branches missed.">        if (resultMapping.getFlags().contains(ResultFlag.CONSTRUCTOR)) {</span>
+<span class="nc" id="L113">          resultMap.constructorResultMappings.add(resultMapping);</span>
+<span class="nc bnc" id="L114" title="All 2 branches missed.">          if (resultMapping.getProperty() != null) {</span>
+<span class="nc" id="L115">            constructorArgNames.add(resultMapping.getProperty());</span>
+          }
+        } else {
+<span class="nc" id="L118">          resultMap.propertyResultMappings.add(resultMapping);</span>
+        }
+<span class="nc bnc" id="L120" title="All 2 branches missed.">        if (resultMapping.getFlags().contains(ResultFlag.ID)) {</span>
+<span class="nc" id="L121">          resultMap.idResultMappings.add(resultMapping);</span>
+        }
+<span class="nc" id="L123">      }</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">      if (resultMap.idResultMappings.isEmpty()) {</span>
+<span class="nc" id="L125">        resultMap.idResultMappings.addAll(resultMap.resultMappings);</span>
+      }
+<span class="nc bnc" id="L127" title="All 2 branches missed.">      if (!constructorArgNames.isEmpty()) {</span>
+<span class="nc" id="L128">        final List&lt;String&gt; actualArgNames = argNamesOfMatchingConstructor(constructorArgNames);</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">        if (actualArgNames == null) {</span>
+<span class="nc" id="L130">          throw new BuilderException(&quot;Error in result map '&quot; + resultMap.id</span>
+              + &quot;'. Failed to find a constructor in '&quot;
+<span class="nc" id="L132">              + resultMap.getType().getName() + &quot;' by arg names &quot; + constructorArgNames</span>
+              + &quot;. There might be more info in debug log.&quot;);
+        }
+<span class="nc" id="L135">        Collections.sort(resultMap.constructorResultMappings, new Comparator&lt;ResultMapping&gt;() {</span>
+          @Override
+          public int compare(ResultMapping o1, ResultMapping o2) {
+<span class="nc" id="L138">            int paramIdx1 = actualArgNames.indexOf(o1.getProperty());</span>
+<span class="nc" id="L139">            int paramIdx2 = actualArgNames.indexOf(o2.getProperty());</span>
+<span class="nc" id="L140">            return paramIdx1 - paramIdx2;</span>
+          }
+        });
+      }
+      // lock down collections
+<span class="nc" id="L145">      resultMap.resultMappings = Collections.unmodifiableList(resultMap.resultMappings);</span>
+<span class="nc" id="L146">      resultMap.idResultMappings = Collections.unmodifiableList(resultMap.idResultMappings);</span>
+<span class="nc" id="L147">      resultMap.constructorResultMappings = Collections.unmodifiableList(resultMap.constructorResultMappings);</span>
+<span class="nc" id="L148">      resultMap.propertyResultMappings = Collections.unmodifiableList(resultMap.propertyResultMappings);</span>
+<span class="nc" id="L149">      resultMap.mappedColumns = Collections.unmodifiableSet(resultMap.mappedColumns);</span>
+<span class="nc" id="L150">      return resultMap;</span>
+    }
+
+    private List&lt;String&gt; argNamesOfMatchingConstructor(List&lt;String&gt; constructorArgNames) {
+<span class="nc" id="L154">      Constructor&lt;?&gt;[] constructors = resultMap.type.getDeclaredConstructors();</span>
+<span class="nc bnc" id="L155" title="All 2 branches missed.">      for (Constructor&lt;?&gt; constructor : constructors) {</span>
+<span class="nc" id="L156">        Class&lt;?&gt;[] paramTypes = constructor.getParameterTypes();</span>
+<span class="nc bnc" id="L157" title="All 2 branches missed.">        if (constructorArgNames.size() == paramTypes.length) {</span>
+<span class="nc" id="L158">          List&lt;String&gt; paramNames = getArgNames(constructor);</span>
+<span class="nc bnc" id="L159" title="All 2 branches missed.">          if (constructorArgNames.containsAll(paramNames)</span>
+<span class="nc bnc" id="L160" title="All 2 branches missed.">              &amp;&amp; argTypesMatch(constructorArgNames, paramTypes, paramNames)) {</span>
+<span class="nc" id="L161">            return paramNames;</span>
+          }
+        }
+      }
+<span class="nc" id="L165">      return null;</span>
+    }
+
+    private boolean argTypesMatch(final List&lt;String&gt; constructorArgNames,
+        Class&lt;?&gt;[] paramTypes, List&lt;String&gt; paramNames) {
+<span class="nc bnc" id="L170" title="All 2 branches missed.">      for (int i = 0; i &lt; constructorArgNames.size(); i++) {</span>
+<span class="nc" id="L171">        Class&lt;?&gt; actualType = paramTypes[paramNames.indexOf(constructorArgNames.get(i))];</span>
+<span class="nc" id="L172">        Class&lt;?&gt; specifiedType = resultMap.constructorResultMappings.get(i).getJavaType();</span>
+<span class="nc bnc" id="L173" title="All 2 branches missed.">        if (!actualType.equals(specifiedType)) {</span>
+<span class="nc bnc" id="L174" title="All 2 branches missed.">          if (log.isDebugEnabled()) {</span>
+<span class="nc" id="L175">            log.debug(&quot;While building result map '&quot; + resultMap.id</span>
+                + &quot;', found a constructor with arg names &quot; + constructorArgNames
+<span class="nc" id="L177">                + &quot;, but the type of '&quot; + constructorArgNames.get(i)</span>
+<span class="nc" id="L178">                + &quot;' did not match. Specified: [&quot; + specifiedType.getName() + &quot;] Declared: [&quot;</span>
+<span class="nc" id="L179">                + actualType.getName() + &quot;]&quot;);</span>
+          }
+<span class="nc" id="L181">          return false;</span>
+        }
+      }
+<span class="nc" id="L184">      return true;</span>
+    }
+
+    private List&lt;String&gt; getArgNames(Constructor&lt;?&gt; constructor) {
+<span class="nc" id="L188">      List&lt;String&gt; paramNames = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L189">      List&lt;String&gt; actualParamNames = null;</span>
+<span class="nc" id="L190">      final Annotation[][] paramAnnotations = constructor.getParameterAnnotations();</span>
+<span class="nc" id="L191">      int paramCount = paramAnnotations.length;</span>
+<span class="nc bnc" id="L192" title="All 2 branches missed.">      for (int paramIndex = 0; paramIndex &lt; paramCount; paramIndex++) {</span>
+<span class="nc" id="L193">        String name = null;</span>
+<span class="nc bnc" id="L194" title="All 2 branches missed.">        for (Annotation annotation : paramAnnotations[paramIndex]) {</span>
+<span class="nc bnc" id="L195" title="All 2 branches missed.">          if (annotation instanceof Param) {</span>
+<span class="nc" id="L196">            name = ((Param) annotation).value();</span>
+<span class="nc" id="L197">            break;</span>
+          }
+        }
+<span class="nc bnc" id="L200" title="All 6 branches missed.">        if (name == null &amp;&amp; resultMap.configuration.isUseActualParamName() &amp;&amp; Jdk.parameterExists) {</span>
+<span class="nc bnc" id="L201" title="All 2 branches missed.">          if (actualParamNames == null) {</span>
+<span class="nc" id="L202">            actualParamNames = ParamNameUtil.getParamNames(constructor);</span>
+          }
+<span class="nc bnc" id="L204" title="All 2 branches missed.">          if (actualParamNames.size() &gt; paramIndex) {</span>
+<span class="nc" id="L205">            name = actualParamNames.get(paramIndex);</span>
+          }
+        }
+<span class="nc bnc" id="L208" title="All 2 branches missed.">        paramNames.add(name != null ? name : &quot;arg&quot; + paramIndex);</span>
+      }
+<span class="nc" id="L210">      return paramNames;</span>
+    }
+  }
+
+  public String getId() {
+<span class="nc" id="L215">    return id;</span>
+  }
+
+  public boolean hasNestedResultMaps() {
+<span class="nc" id="L219">    return hasNestedResultMaps;</span>
+  }
+
+  public boolean hasNestedQueries() {
+<span class="nc" id="L223">    return hasNestedQueries;</span>
+  }
+
+  public Class&lt;?&gt; getType() {
+<span class="nc" id="L227">    return type;</span>
+  }
+
+  public List&lt;ResultMapping&gt; getResultMappings() {
+<span class="nc" id="L231">    return resultMappings;</span>
+  }
+
+  public List&lt;ResultMapping&gt; getConstructorResultMappings() {
+<span class="nc" id="L235">    return constructorResultMappings;</span>
+  }
+
+  public List&lt;ResultMapping&gt; getPropertyResultMappings() {
+<span class="nc" id="L239">    return propertyResultMappings;</span>
+  }
+
+  public List&lt;ResultMapping&gt; getIdResultMappings() {
+<span class="nc" id="L243">    return idResultMappings;</span>
+  }
+
+  public Set&lt;String&gt; getMappedColumns() {
+<span class="nc" id="L247">    return mappedColumns;</span>
+  }
+
+  public Set&lt;String&gt; getMappedProperties() {
+<span class="nc" id="L251">    return mappedProperties;</span>
+  }
+
+  public Discriminator getDiscriminator() {
+<span class="nc" id="L255">    return discriminator;</span>
+  }
+
+  public void forceNestedResultMaps() {
+<span class="nc" id="L259">    hasNestedResultMaps = true;</span>
+<span class="nc" id="L260">  }</span>
+  
+  public Boolean getAutoMapping() {
+<span class="nc" id="L263">    return autoMapping;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

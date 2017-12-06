@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="api">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>apilabs</title>
+    <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/index.css">
+    <link rel="stylesheet" href="./css/api.css">
+    <link rel="icon" href="../img/share.png">
+    <style>
+        [ng\:cloak],
+        [ng-cloak],
+        [data-ng-cloak],
+        [x-ng-cloak],
+        .ng-cloak,
+        .x-ng-cloak {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body class="ng-cloak">
+    <nav class="navbar log-navbar">
+        <div class="container-fluid">
+            <div class="navbar-header" style="padding-right: 30px; padding-left: 20px;">
+                <a href="/">
+                    <img src="../img/share.png" alt="apilabs" style="width: 50px;">
+                </a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-6">
+                <ul class="nav navbar-nav">
+                    <li>
+                        <a href="#">联系我们</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid" style="background-color: #fff;" ng-controller="ApiItemsCtrl">
+        <div class="container search">
+            <div class="row">
+                <div class="input-group col-md-offset-2 col-md-8">
+                    <input ng-model="filter.search" type="text" class="form-control" placeholder="搜索你感兴趣的文档" ng-keydown="enter($event)">
+                    <span class="input-group-addon" style="cursor: pointer;" ng-click="search()">
+                        <span class="glyphicon glyphicon-search"></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <!-- ==============================================正文================================================================================ -->
+        <div class="container list">
+            <div class="col-md-10 col-md-offset-1 item" ng-repeat="api in apis" ng-click="counter(api.id)">
+                <a href="{{ api.url }}">
+                    <div class="media">
+                        <div class="media-left">
+                            <img class="media-object" ng-src="{{ api.imgPath }}">
+                        </div>
+                        <div class="media-body padding-left-30">
+                            <div class="media-heading h4">{{ api.title }}</div>
+                            <p>{{ api.description }}</p>
+                            <p style="text-align: right;">浏览次数：{{ api.count }}</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    <footer class="ftCon-Wrapper">
+        <span>陕ICP备17019731号</span>
+    </footer>
+    <script src="../node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="../bower_components/angular/angular.min.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/httpservice.js"></script>
+</body>
+
+</html>

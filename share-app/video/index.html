@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="video">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>apilabs</title>
+    <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/index.css">
+    <link rel="stylesheet" href="./css/api.css">
+    <link rel="icon" href="../img/share.png">
+    <style>
+        [ng\:cloak],
+        [ng-cloak],
+        [data-ng-cloak],
+        [x-ng-cloak],
+        .ng-cloak,
+        .x-ng-cloak {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body class="ng-cloak">
+    <nav class="navbar log-navbar">
+        <div class="container-fluid">
+            <div class="navbar-header" style="padding-right: 30px; padding-left: 20px;">
+                <a href="/">
+                    <img src="../img/share.png" alt="apilabs" style="width: 50px;">
+                </a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-6">
+                <ul class="nav navbar-nav">
+                    <li>
+                        <a href="#">联系我们</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid" style="background-color: #fff;" ng-controller="VideoItemsCtrl">
+        <div class="container search">
+            <div class="row">
+                <div class="input-group col-md-offset-2 col-md-8">
+                    <input ng-model="filter.search" type="text" class="form-control" placeholder="搜索你感兴趣的文档" ng-keydown="enter($event)">
+                    <span class="input-group-addon" style="cursor: pointer;" ng-click="search()">
+                        <span class="glyphicon glyphicon-search"></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <!-- ==============================================正文================================================================================ -->
+        <div class="container list">
+            <div class="col-md-10 col-md-offset-1 item" ng-repeat="video in videos">
+                <div style="position: absolute; right: 0; color: #969696; z-index: 999">
+                    <button type="button" class="btn" ng-click="extract(video)">
+                        <span class="glyphicon glyphicon-download-alt"></span>百度网盘， 提取码：{{video.extractCode}}
+                    </button>
+                </div>
+                <div class="media">
+                    <div class="media-left">
+                        <img class="media-object" ng-src="{{ video.imgPath }}">
+                        <div style="padding-top: 10px;">下载次数：{{ video.count }}</div>
+                    </div>
+                    <div class="media-body padding-left-30" style="position: relative">
+                        <div class="media-heading h4">{{ video.title }}</div>
+                        <div class="h5" style="font-size: 17px;">{{ video.description }}</div>
+                        <div style="position: absolute; bottom: 0%">
+                            <div>所属机构：{{ video.mechanism }}</div>
+                            <div>主讲老师：{{ video.teacher }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="ftCon-Wrapper">
+        <span>陕ICP备17019731号</span>
+    </footer>
+    <script src="../node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="../bower_components/angular/angular.min.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/httpservice.js"></script>
+</body>
+
+</html>

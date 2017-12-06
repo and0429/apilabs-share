@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.apilabs.share.dao.VideoDao">
+
+	<resultMap type="Video" id="video">
+		<id column="id_" property="id" />
+		<result column="img_path" property="imgPath" />
+		<result column="url_" property="url" />
+		<result column="title_" property="title" />
+		<result column="description_" property="description" />
+		<result column="count_" property="count"/>
+		<result column="extract_code" property="extractCode"/>
+		<result column="mechanism_" property="mechanism"/>
+		<result column="teacher_" property="teacher"/>
+	</resultMap>
+
+
+	<sql id="field">
+		id_, img_path, url_, title_, description_, count_, extract_code, mechanism_, teacher_
+	</sql>
+
+
+	<select id="getAll" parameterType="Video" resultMap="video">
+		select 
+			<include refid="field" />
+		from 
+			video
+		<where>
+			<if test="title != null">
+				<bind name="key" value="'%' + _parameter.getTitle() +'%'" />
+				title_ like #{key}
+			</if>
+		</where>
+		order by
+			count_ desc
+	</select>
+
+
+</mapper>

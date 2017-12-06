@@ -1,0 +1,26 @@
+{
+  "name": "apilabs",
+  "version": "1.0.0",
+  "description": "apilabs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitlab.com/OldBoyGame/apilabs.git"
+  },
+  "keywords": [
+    "apilabs"
+  ],
+  "author": "zhangkai",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://gitlab.com/OldBoyGame/apilabs/issues"
+  },
+  "homepage": "https://gitlab.com/OldBoyGame/apilabs#README",
+  "dependencies": {
+    "bootstrap": "^3.3.7",
+    "jquery": "^3.2.1"
+  }
+}

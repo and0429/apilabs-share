@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransactionalCache.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">mybatis</a> &gt; <a href="index.source.html" class="el_package">org.apache.ibatis.cache.decorators</a> &gt; <span class="el_source">TransactionalCache.java</span></div><h1>TransactionalCache.java</h1><pre class="source lang-java linenums">/**
+ *    Copyright 2009-2017 the original author or authors.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+package org.apache.ibatis.cache.decorators;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.locks.ReadWriteLock;
+
+import org.apache.ibatis.cache.Cache;
+import org.apache.ibatis.logging.Log;
+import org.apache.ibatis.logging.LogFactory;
+
+/**
+ * The 2nd level cache transactional buffer.
+ * 
+ * This class holds all cache entries that are to be added to the 2nd level cache during a Session.
+ * Entries are sent to the cache when commit is called or discarded if the Session is rolled back. 
+ * Blocking cache support has been added. Therefore any get() that returns a cache miss 
+ * will be followed by a put() so any lock associated with the key can be released. 
+ * 
+ * @author Clinton Begin
+ * @author Eduardo Macarron
+ */
+public class TransactionalCache implements Cache {
+
+<span class="nc" id="L41">  private static final Log log = LogFactory.getLog(TransactionalCache.class);</span>
+
+  private final Cache delegate;
+  private boolean clearOnCommit;
+  private final Map&lt;Object, Object&gt; entriesToAddOnCommit;
+  private final Set&lt;Object&gt; entriesMissedInCache;
+
+<span class="nc" id="L48">  public TransactionalCache(Cache delegate) {</span>
+<span class="nc" id="L49">    this.delegate = delegate;</span>
+<span class="nc" id="L50">    this.clearOnCommit = false;</span>
+<span class="nc" id="L51">    this.entriesToAddOnCommit = new HashMap&lt;Object, Object&gt;();</span>
+<span class="nc" id="L52">    this.entriesMissedInCache = new HashSet&lt;Object&gt;();</span>
+<span class="nc" id="L53">  }</span>
+
+  @Override
+  public String getId() {
+<span class="nc" id="L57">    return delegate.getId();</span>
+  }
+
+  @Override
+  public int getSize() {
+<span class="nc" id="L62">    return delegate.getSize();</span>
+  }
+
+  @Override
+  public Object getObject(Object key) {
+    // issue #116
+<span class="nc" id="L68">    Object object = delegate.getObject(key);</span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">    if (object == null) {</span>
+<span class="nc" id="L70">      entriesMissedInCache.add(key);</span>
+    }
+    // issue #146
+<span class="nc bnc" id="L73" title="All 2 branches missed.">    if (clearOnCommit) {</span>
+<span class="nc" id="L74">      return null;</span>
+    } else {
+<span class="nc" id="L76">      return object;</span>
+    }
+  }
+
+  @Override
+  public ReadWriteLock getReadWriteLock() {
+<span class="nc" id="L82">    return null;</span>
+  }
+
+  @Override
+  public void putObject(Object key, Object object) {
+<span class="nc" id="L87">    entriesToAddOnCommit.put(key, object);</span>
+<span class="nc" id="L88">  }</span>
+
+  @Override
+  public Object removeObject(Object key) {
+<span class="nc" id="L92">    return null;</span>
+  }
+
+  @Override
+  public void clear() {
+<span class="nc" id="L97">    clearOnCommit = true;</span>
+<span class="nc" id="L98">    entriesToAddOnCommit.clear();</span>
+<span class="nc" id="L99">  }</span>
+
+  public void commit() {
+<span class="nc bnc" id="L102" title="All 2 branches missed.">    if (clearOnCommit) {</span>
+<span class="nc" id="L103">      delegate.clear();</span>
+    }
+<span class="nc" id="L105">    flushPendingEntries();</span>
+<span class="nc" id="L106">    reset();</span>
+<span class="nc" id="L107">  }</span>
+
+  public void rollback() {
+<span class="nc" id="L110">    unlockMissedEntries();</span>
+<span class="nc" id="L111">    reset();</span>
+<span class="nc" id="L112">  }</span>
+
+  private void reset() {
+<span class="nc" id="L115">    clearOnCommit = false;</span>
+<span class="nc" id="L116">    entriesToAddOnCommit.clear();</span>
+<span class="nc" id="L117">    entriesMissedInCache.clear();</span>
+<span class="nc" id="L118">  }</span>
+
+  private void flushPendingEntries() {
+<span class="nc bnc" id="L121" title="All 2 branches missed.">    for (Map.Entry&lt;Object, Object&gt; entry : entriesToAddOnCommit.entrySet()) {</span>
+<span class="nc" id="L122">      delegate.putObject(entry.getKey(), entry.getValue());</span>
+<span class="nc" id="L123">    }</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">    for (Object entry : entriesMissedInCache) {</span>
+<span class="nc bnc" id="L125" title="All 2 branches missed.">      if (!entriesToAddOnCommit.containsKey(entry)) {</span>
+<span class="nc" id="L126">        delegate.putObject(entry, null);</span>
+      }
+<span class="nc" id="L128">    }</span>
+<span class="nc" id="L129">  }</span>
+
+  private void unlockMissedEntries() {
+<span class="nc bnc" id="L132" title="All 2 branches missed.">    for (Object entry : entriesMissedInCache) {</span>
+      try {
+<span class="nc" id="L134">        delegate.removeObject(entry);</span>
+<span class="nc" id="L135">      } catch (Exception e) {</span>
+<span class="nc" id="L136">        log.warn(&quot;Unexpected exception while notifiying a rollback to the cache adapter.&quot;</span>
+            + &quot;Consider upgrading your cache adapter to the latest version.  Cause: &quot; + e);
+<span class="nc" id="L138">      }</span>
+<span class="nc" id="L139">    }</span>
+<span class="nc" id="L140">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

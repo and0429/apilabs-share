@@ -1,0 +1,18 @@
+.list .item {
+    border-bottom: 1px solid #E5E5E5;
+    padding: 20px 10px 20px 0;
+}
+
+.list .item a:hover {
+    text-decoration: none;
+    text-decoration-color: rgb(0, 110, 255);
+}
+
+.media img {
+    height: 100px;
+    width: 100px;
+}
+
+.padding-left-30 {
+    padding-left: 30px
+}

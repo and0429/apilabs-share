@@ -1,0 +1,24 @@
+{
+  "name": "apilabs",
+  "description": "apilabs",
+  "main": "index.js",
+  "authors": [
+    "zhangkai"
+  ],
+  "license": "ISC",
+  "keywords": [
+    "apilabs"
+  ],
+  "homepage": "https://github.com/and0429/apilabs-share",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "angularjs#1"
+  }
+}

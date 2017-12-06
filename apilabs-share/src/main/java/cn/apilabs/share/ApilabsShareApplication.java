@@ -1,4 +1,4 @@
-package cn.apilabs.share;
+ package cn.apilabs.share;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

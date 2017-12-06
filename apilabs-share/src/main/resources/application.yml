@@ -4,9 +4,9 @@ server:
 spring:
   datasource:
     druid:
-      url: jdbc:mysql://www.apilabs.cn:3306/share?useUnicode=true&characterEncoding=utf8&autoReconnect=true&rewriteBatchedStatements=TRUE
+      url: jdbc:mysql://rm-wz9ltdam04wdk4cgrro.mysql.rds.aliyuncs.com:3306/share?useUnicode=true&characterEncoding=utf8&autoReconnect=true&rewriteBatchedStatements=TRUE
       username: root
-      password: 123456
+      password: zz802331117@
       driver-class-name: com.mysql.jdbc.Driver
 mybatis:
   type-aliases-package: cn.apilabs.share.domain

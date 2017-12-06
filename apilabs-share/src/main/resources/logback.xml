@@ -10,7 +10,7 @@
 
 	<logger name="cn.apilabs.share.dao" level="trace" />
 
-	<root level="info">
+	<root level="ERROR">
 		<appender-ref ref="STDOUT" />
 	</root>
 </configuration>

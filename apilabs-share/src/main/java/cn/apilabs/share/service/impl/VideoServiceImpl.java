@@ -18,7 +18,7 @@ import cn.apilabs.share.service.VideoService;
  *
  */
 @Service
-@Transactional
+@Transactional(rollbackFor = RuntimeException.class)
 public class VideoServiceImpl implements VideoService {
 
 	@Autowired
@@ -30,7 +30,7 @@ public class VideoServiceImpl implements VideoService {
 	 * @see cn.apilabs.share.service.ApiService#getAll(cn.apilabs.share.domain.Api)
 	 */
 	@Override
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, rollbackFor = RuntimeException.class)
 	public List<Video> getAll(Video condition) {
 		return videoDao.getAll(condition);
 	}

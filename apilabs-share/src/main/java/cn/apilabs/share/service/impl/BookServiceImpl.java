@@ -18,7 +18,7 @@ import cn.apilabs.share.service.BookService;
  *
  */
 @Service
-@Transactional
+@Transactional(rollbackFor = RuntimeException.class)
 public class BookServiceImpl implements BookService {
 
 	@Autowired
@@ -30,7 +30,7 @@ public class BookServiceImpl implements BookService {
 	 * @see cn.apilabs.share.service.ApiService#getAll(cn.apilabs.share.domain.Api)
 	 */
 	@Override
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, rollbackFor = RuntimeException.class)
 	public List<Book> getAll(Book condition) {
 		return bookDao.getAll(condition);
 	}

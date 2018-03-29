@@ -12,7 +12,7 @@ import cn.apilabs.share.domain.Book;
 public interface BookService {
 
 	/**
-	 * 
+	 * s
 	 * @param condition
 	 *            查询条件
 	 * @return
@@ -20,7 +20,7 @@ public interface BookService {
 	List<Book> getAll(Book condition);
 
 	/**
-	 * 
+	 * s
 	 * @param id
 	 */
 	void updateCount(Integer id);

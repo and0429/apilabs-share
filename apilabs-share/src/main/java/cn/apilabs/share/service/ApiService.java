@@ -12,7 +12,7 @@ import cn.apilabs.share.domain.Api;
 public interface ApiService {
 
 	/**
-	 * 
+	 * s
 	 * @param condition
 	 *            查询条件
 	 * @return
@@ -20,7 +20,7 @@ public interface ApiService {
 	List<Api> getAll(Api condition);
 
 	/**
-	 * 
+	 * s
 	 * @param id
 	 */
 	void updateCount(Integer id);

@@ -12,7 +12,7 @@ import cn.apilabs.share.domain.Video;
 public interface VideoService {
 
 	/**
-	 * 
+	 * s
 	 * @param condition
 	 *            查询条件
 	 * @return
@@ -20,7 +20,7 @@ public interface VideoService {
 	List<Video> getAll(Video condition);
 
 	/**
-	 * 
+	 * s
 	 * @param id
 	 */
 	void updateCount(Integer id);

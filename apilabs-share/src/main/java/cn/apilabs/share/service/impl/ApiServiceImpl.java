@@ -18,7 +18,7 @@ import cn.apilabs.share.service.ApiService;
  *
  */
 @Service
-@Transactional
+@Transactional(rollbackFor = RuntimeException.class)
 public class ApiServiceImpl implements ApiService {
 
 	@Autowired
@@ -30,7 +30,7 @@ public class ApiServiceImpl implements ApiService {
 	 * @see cn.apilabs.share.service.ApiService#getAll(cn.apilabs.share.domain.Api)
 	 */
 	@Override
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, rollbackFor = RuntimeException.class)
 	public List<Api> getAll(Api condition) {
 		return apiDao.getAll(condition);
 	}
